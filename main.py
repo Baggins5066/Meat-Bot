@@ -17,7 +17,6 @@ client = discord.Client(intents=intents)
 
 conversation_history = {}  # store short conversation context
 
-
 # -------- LLM Response --------
 async def get_llm_response(prompt):
     """
@@ -96,7 +95,6 @@ async def on_message(message):
         emojis = ["💪", "🔥", "😂", "😎", "🍖"]
         await message.add_reaction(random.choice(emojis))
 
-
 # -------- Scheduled Background Chatter --------
 @tasks.loop(minutes=30)  # every 30 minutes
 async def random_chatter():
@@ -105,7 +103,12 @@ async def random_chatter():
     guild = random.choice(client.guilds)
     if not guild.text_channels:
         return
-    channel = random.choice(guild.text_channels)
+    allowed_channels = [
+        c for c in guild.text_channels
+        if c.permissions_for(guild.me).send_messages
+    ]
+    if allowed_channels:
+        channel = random.choice(allowed_channels)
     try:
         async with channel.typing():
             await asyncio.sleep(random.uniform(1, 4))
