@@ -4,8 +4,8 @@ import random
 import asyncio
 from discord.ext import tasks
 
-DISCORD_BOT_TOKEN = "YOUR_DISCORD_BOT_TOKEN"
-LLM_API_KEY = "YOUR_GEMINI_API_KEY"
+DISCORD_BOT_TOKEN = "MTQxNTAxMjkxOTkyMTYxMDg2NA.G1opZy.b5EH_jVe7l-8broIOfi4xTJCE7DsrrFZdO3jNk"
+LLM_API_KEY = "AIzaSyCcDyApw0IHAsDwPGUsbYTVOjfrUm1U5CM"
 
 intents = discord.Intents.default()
 intents.message_content = True
