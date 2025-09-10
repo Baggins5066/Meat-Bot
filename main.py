@@ -11,9 +11,10 @@ DISCORD_BOT_TOKEN = "MTQxNTAxMjkxOTkyMTYxMDg2NA.G1opZy.b5EH_jVe7l-8broIOfi4xTJCE
 LLM_API_KEY = "AIzaSyCcDyApw0IHAsDwPGUsbYTVOjfrUm1U5CM"
 
 # The following intents are required for the bot to receive messages.
-# The 'message_content' intent is privileged and must be enabled in the Discord Developer Portal.
+# The 'message_content' and 'direct_messages' intents are privileged and must be enabled in the Discord Developer Portal.
 intents = discord.Intents.default()
 intents.message_content = True
+intents.dm_messages = True  # This is the correct attribute for direct messages
 
 # Create a Discord client instance with the specified intents.
 client = discord.Client(intents=intents)
@@ -34,6 +35,7 @@ async def get_llm_response(prompt):
     # The `Google Search` tool can be used for grounded responses.
     
     # Example using Gemini API (uncomment and fill in with your key and logic)
+    import aiohttp
     import json
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
@@ -69,8 +71,17 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    # Check if the bot was mentioned in the message.
-    if client.user.mentioned_in(message):
+    # Check if the message is a DM. DMs do not have a guild object.
+    if message.guild is None:
+        prompt = message.content.strip()
+        # Let the user know the bot is thinking.
+        async with message.channel.typing():
+            # Get the response from the LLM.
+            response = await get_llm_response(prompt)
+            # Send the response back to the channel.
+            await message.channel.send(response)
+    # If the message is not a DM, check if the bot was mentioned.
+    elif client.user.mentioned_in(message):
         # Strip the mention from the message to get the clean prompt for the LLM.
         prompt = message.content.replace(f'<@{client.user.id}>', '').strip()
 
