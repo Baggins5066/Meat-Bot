@@ -47,7 +47,6 @@ async def get_llm_response(prompt):
 
     return f"Bro idk what to say rn lol (debug: {prompt})"
 
-
 # -------- Events --------
 @client.event
 async def on_ready():
@@ -55,13 +54,19 @@ async def on_ready():
     print('------')
     random_chatter.start()  # start background chatter loop
 
-
 @client.event
 async def on_message(message):
     if message.author == client.user:
         return
+    # Log all incoming messages
+    print(f"[INCOMING] {message.author}: {message.content}")
 
-    # Keep short history per channel
+    # check if bot can reply in this channel
+    perms = message.channel.permissions_for(message.guild.me)
+    if not (perms.send_messages and perms.read_messages):
+        return  # skip if no permission
+
+    # ---- rest of your code ----
     history = conversation_history.get(message.channel.id, [])
     history.append({"author": str(message.author), "content": message.content})
     if len(history) > 10:
@@ -69,31 +74,31 @@ async def on_message(message):
     conversation_history[message.channel.id] = history
 
     should_reply = False
-
-    # Always reply if mentioned
     if client.user.mentioned_in(message):
         should_reply = True
-    # Random chance to reply (feels alive)
-    elif random.random() < 0.08:  # ~8% chance
+    elif random.random() < 0.08:
         should_reply = True
-    # Trigger words
     elif any(word in message.content.lower() for word in ["bro", "sigma", "alpha", "gym", "grind"]):
         should_reply = True
 
     if should_reply:
-        async with message.channel.typing():
-            await asyncio.sleep(random.uniform(1, 3))  # typing delay
-            prompt = (
-                f"Recent chat history:\n{history}\n\n"
-                f"User: {message.content}\nBot:"
-            )
-            response = await get_llm_response(prompt)
-            await message.channel.send(response)
+        if perms.send_messages:  # double-check before sending
+            async with message.channel.typing():
+                await asyncio.sleep(random.uniform(1, 3))
+                prompt = f"Recent chat history:\n{history}\n\nUser: {message.content}\nBot:"
+                response = await get_llm_response(prompt)
 
-    # Random emoji reactions to spice things up
-    if random.random() < 0.05:  # 5% chance
+                # Log outgoing messages
+                print(f"[OUTGOING] {client.user}: {response}")
+
+                await message.channel.send(response)
+
+    # add reactions only if allowed
+    if perms.add_reactions and random.random() < 0.05:
         emojis = ["💪", "🔥", "😂", "😎", "🍖"]
-        await message.add_reaction(random.choice(emojis))
+        chosen = random.choice(emojis)
+        print(f"[REACTION] Added {chosen} to {message.author}'s message")
+        await message.add_reaction(chosen)
 
 # -------- Scheduled Background Chatter --------
 @tasks.loop(minutes=30)  # every 30 minutes
