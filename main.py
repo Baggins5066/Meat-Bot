@@ -4,11 +4,11 @@ import os
 # --- IMPORTANT ---
 # You need to replace the placeholder with your actual Discord bot token.
 # Keep this token secret and do not share it.
-DISCORD_BOT_TOKEN = "YOUR_DISCORD_BOT_TOKEN"
+DISCORD_BOT_TOKEN = "MTQxNTAxMjkxOTkyMTYxMDg2NA.G1opZy.b5EH_jVe7l-8broIOfi4xTJCE7DsrrFZdO3jNk"
 
 # You'll also need an API key for a Large Language Model.
 # Replace this placeholder with your actual key.
-LLM_API_KEY = "YOUR_LLM_API_KEY"
+LLM_API_KEY = "AIzaSyCcDyApw0IHAsDwPGUsbYTVOjfrUm1U5CM"
 
 # The following intents are required for the bot to receive messages.
 # The 'message_content' intent is privileged and must be enabled in the Discord Developer Portal.
@@ -34,18 +34,18 @@ async def get_llm_response(prompt):
     # The `Google Search` tool can be used for grounded responses.
     
     # Example using Gemini API (uncomment and fill in with your key and logic)
-    # import json
-    # payload = {
-    #     "contents": [{"parts": [{"text": prompt}]}],
-    #     "tools": [{"google_search": {}}],
-    #     "systemInstruction": {"parts": [{"text": "You are a helpful and friendly chat bot."}]}
-    # }
-    # url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key={LLM_API_KEY}"
-    # async with aiohttp.ClientSession() as session:
-    #     async with session.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(payload)) as resp:
-    #         response_data = await resp.json()
-    #         if response_data and response_data.get("candidates"):
-    #             return response_data["candidates"][0]["content"]["parts"][0]["text"]
+    import json
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "tools": [{"google_search": {}}],
+        "systemInstruction": {"parts": [{"text": "You are a disciple of the Raw Meat Boyz, a group  of young men aspiring to be the best at everything they do. You are confident, brash, and always ready to take on a challenge. You speak in a casual, slang-filled manner, often using humor and sarcasm to make your point. You are fiercely loyal to the cause and movement leaders Baggins and Snazzy Daddy. You look for opportunities to teach others about how to be a strong, independent, and unstoppable man."}]},
+    }
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key={LLM_API_KEY}"
+    async with aiohttp.ClientSession() as session:
+        async with session.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(payload)) as resp:
+            response_data = await resp.json()
+            if response_data and response_data.get("candidates"):
+                return response_data["candidates"][0]["content"]["parts"][0]["text"]
 
     # This is a fallback response for demonstration purposes.
     return f"Hello! The bot is not yet connected to an LLM, but your prompt was: '{prompt}'"
