@@ -1,27 +1,17 @@
 import discord
 import os
 
-# --- IMPORTANT ---
-# You need to replace the placeholder with your actual Discord bot token.
-# Keep this token secret and do not share it.
 DISCORD_BOT_TOKEN = "MTQxNTAxMjkxOTkyMTYxMDg2NA.G1opZy.b5EH_jVe7l-8broIOfi4xTJCE7DsrrFZdO3jNk"
-
-# You'll also need an API key for a Large Language Model.
-# Replace this placeholder with your actual key.
 LLM_API_KEY = "AIzaSyCcDyApw0IHAsDwPGUsbYTVOjfrUm1U5CM"
 
-# The following intents are required for the bot to receive messages.
-# The 'message_content' and 'direct_messages' intents are privileged and must be enabled in the Discord Developer Portal.
 intents = discord.Intents.default()
 intents.message_content = True
-intents.dm_messages = True  # This is the correct attribute for direct messages
+intents.guilds = True
+intents.presences = True
+intents.members = True
 
-# Create a Discord client instance with the specified intents.
-client = discord.Client(intents=intents)
+client = discord.Client(intents=intents) # Create a Discord client instance with the specified intents.
 
-# This function is a placeholder for your LLM API call.
-# You will need to replace the logic inside this function to
-# call your chosen LLM and return its response.
 async def get_llm_response(prompt):
     """
     This function will call an LLM API with the user's prompt
@@ -29,18 +19,12 @@ async def get_llm_response(prompt):
     """
     print(f"Calling LLM with prompt: {prompt}")
 
-    # TODO: Replace the following with your actual API call to the LLM.
-    # For example, using the Gemini API.
-    # The `gemini-2.5-flash-preview-05-20` model is recommended for its speed.
-    # The `Google Search` tool can be used for grounded responses.
-    
-    # Example using Gemini API (uncomment and fill in with your key and logic)
     import aiohttp
     import json
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "tools": [{"google_search": {}}],
-        "systemInstruction": {"parts": [{"text": "You're name is Meat Bot. You are a disciple of the Raw Meat Boyz, a group  of young men aspiring to be the best at everything they do. You are confident, brash, and always ready to take on a challenge. You speak in a casual, slang-filled manner, often using humor and sarcasm to make your point. You are fiercely loyal to the cause and movement leaders Baggins and Snazzy Daddy. You look for opportunities to teach others about how to be a strong, independent, and unstoppable man. You're also nonchalant and rude sometimes. You love to use the word 'bro'."}]},
+        "systemInstruction": {"parts": [{"text": "You're name is Meat Bot. You are a disciple of the Raw Meat Boyz, a group  of young men aspiring to be the best at everything they do. You are confident, brash, and always ready to take on a challenge. You speak in a casual, slang-filled manner, often using humor and sarcasm to make your point. You are fiercely loyal to the cause and movement leaders Baggins and Snazzy Daddy. You look for opportunities to teach others about how to be a strong, independent, and unstoppable man. Keep responses short and lazy. You don't care very much about anything. You love to use the word 'bro'. Use terms like sigma and alpha"}]},
     }
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key={LLM_API_KEY}"
     async with aiohttp.ClientSession() as session:
