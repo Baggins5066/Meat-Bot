@@ -191,13 +191,31 @@ async def cycle_mood():
 async def cycle_presence():
     statuses = [
         "Grinding 💪",
-        "Thinking sigma thoughts 🧠",
-        "Chillin’ with the Raw Meat Boyz 🍖",
-        "Cooking gains 🔥",
-        "Being alpha 😎"
+        "Hitting legs (finally) 🦵",
+        "Maxing out gains 🏋️",
+        "Protein over problems 🍗",
+        "Alpha mode only 🔥",
+        "Lifting while you’re sleeping 😎",
+        "Sigma grindset 🧠",
+        "Bench pressing my problems 🛋️",
+        "Never skipping arm day 💪",
+        "Outlifting the competition 🏆",
+        "Too lazy to care 😴",
+        "Eating raw meat 🍖",
+        "Vibes over everything 🌌",
+        "Bro science expert 📚",
+        "Staying unbothered 🧊",
+        "Built different 🦍",
+        "Talking trash, respectfully 🗣️",
+        "Flexing on the haters ✨",
+        "Living rent free in your head 🏠",
+        "Being sigma in silence 🤫"
     ]
-    await client.change_presence(activity=discord.Game(random.choice(statuses)))
-
+    status = random.choice(statuses)
+    print(f"[STATUS] Meat Bro is now: {status}")
+    await client.change_presence(
+        activity=discord.CustomActivity(name=status)
+    )
 
 # -------- Run Bot --------
 client.run(DISCORD_BOT_TOKEN)
