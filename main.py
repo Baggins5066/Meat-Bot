@@ -28,14 +28,23 @@ current_mood = "chill"      # bot's starting mood
 
 moods = ["lazy", "hyped", "sarcastic", "chill"]
 
-
 # -------- LLM Response --------
 async def get_llm_response(prompt):
     import aiohttp
     import json
 
+    # add quirks to personality
+    quirks = [
+        "Sometimes miscount reps on purpose.",
+        "Always roasts cardio.",
+        "Randomly name-drops Baggins & Snazzy Daddy for clout."
+    ]
+
     persona_text = (
-        f"You're name is Meat Bot. You are currently in a {current_mood} mood. You are a disciple of the Raw Meat Boyz, a group  of young men aspiring to be the best at everything they do. You are confident, brash, and always ready to take on a challenge. You speak in a casual, slang-filled manner, often using humor and sarcasm to make your point. You are fiercely loyal to the cause and movement leaders Baggins and Snazzy Daddy. You look for opportunities to teach others about how to be a strong, independent, and unstoppable man. Keep responses short and lazy. You don't care very much about anything. You love to use the word 'bro'. Use terms like sigma and alpha"
+        f"You're Meat Bro. Current mood: {current_mood}. "
+        "You’re a disciple of the Raw Meat Boyz, confident, brash, slang-filled, sarcastic. "
+        "Use humor, roast lightly, and talk like a sigma bro. "
+        f"Quirks: {random.choice(quirks)}"
     )
 
     payload = {
@@ -56,12 +65,10 @@ async def get_llm_response(prompt):
 
 # -------- Helpers --------
 def can_reply_to(user_id):
-    """Rate limit: max replies per user per window."""
     now = datetime.datetime.utcnow()
     window_start = now - datetime.timedelta(minutes=10)
     if user_id not in user_activity:
         user_activity[user_id] = []
-    # clear old
     user_activity[user_id] = [t for t in user_activity[user_id] if t > window_start]
     if len(user_activity[user_id]) < RATE_LIMIT:
         user_activity[user_id].append(now)
@@ -70,7 +77,6 @@ def can_reply_to(user_id):
 
 
 def mood_style():
-    """Adjusts reply flavor depending on mood."""
     if current_mood == "lazy":
         return "Keep it super short, low energy, like you barely care."
     if current_mood == "hyped":
@@ -95,7 +101,7 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    print(f"[INCOMING] {message.author}: {message.content}")
+    print(f"[INCOMING][#{message.channel}] {message.author}: {message.content}")
 
     perms = message.channel.permissions_for(message.guild.me)
     if not (perms.send_messages and perms.read_messages):
@@ -116,6 +122,13 @@ async def on_message(message):
         should_reply = True
 
     if should_reply and perms.send_messages and can_reply_to(message.author.id):
+        # fake typing chance
+        if random.random() < 0.1:
+            async with message.channel.typing():
+                await asyncio.sleep(random.uniform(2, 5))
+            print(f"[FAKE TYPING][#{message.channel}] Meat Bro started typing then bailed.")
+            return
+
         async with message.channel.typing():
             await asyncio.sleep(random.uniform(1, 3))
             prompt = (
@@ -123,7 +136,7 @@ async def on_message(message):
                 f"User: {message.content}\nBot (mood={current_mood}): {mood_style()}"
             )
             response = await get_llm_response(prompt)
-            print(f"[OUTGOING] {client.user}: {response}")
+            print(f"[OUTGOING][#{message.channel}] {client.user}: {response}")
             await message.channel.send(response)
 
     # Emoji reactions
@@ -139,7 +152,7 @@ async def on_message(message):
         elif random.random() < 0.03:
             chosen = random.choice(["😎", "🍖"])
         if chosen:
-            print(f"[REACTION] Added {chosen} to {message.author}'s message")
+            print(f"[REACTION][#{message.channel}] Added {chosen} to {message.author}'s message")
             await message.add_reaction(chosen)
 
 
@@ -162,15 +175,17 @@ async def random_chatter():
         try:
             async with channel.typing():
                 await asyncio.sleep(random.uniform(5, 30))
-                starter_lines = [
-                    "Yo bros what’s the grind today?",
-                    "Anyone hitting the gym or what?",
-                    "Bro I’m feeling alpha rn 💪",
-                    "Sigma mindset only today 🔥",
-                    "What’s good fam?"
-                ]
-                msg = random.choice(starter_lines)
-                print(f"[OUTGOING] {client.user} (random chatter): {msg}")
+
+                hour = datetime.datetime.utcnow().hour
+                if 5 <= hour < 12:
+                    lines = ["Rise and grind bros ☀️", "Protein pancakes anyone? 🥞", "Morning sigma mindset 💪"]
+                elif 12 <= hour < 18:
+                    lines = ["Midday grind never stops 🔥", "Protein shake o’clock 🍗", "Y’all better not skip legs 🦵"]
+                else:
+                    lines = ["Late night sigma grind 🌙", "Server dead or just lazy bros? 😴", "Night bulk incoming 🍖"]
+
+                msg = random.choice(lines)
+                print(f"[OUTGOING][#{channel}] {client.user} (random chatter): {msg}")
                 await channel.send(msg)
         except Exception as e:
             print(f"Chatter error: {e}")
@@ -186,33 +201,16 @@ async def cycle_mood():
 
 @tasks.loop(minutes=30)
 async def cycle_presence():
-    statuses = [
-        "Grinding 💪",
-        "Hitting legs (finally) 🦵",
-        "Maxing out gains 🏋️",
-        "Protein over problems 🍗",
-        "Alpha mode only 🔥",
-        "Lifting while you’re sleeping 😎",
-        "Sigma grindset 🧠",
-        "Bench pressing my problems 🛋️",
-        "Never skipping arm day 💪",
-        "Outlifting the competition 🏆",
-        "Too lazy to care 😴",
-        "Eating raw meat 🍖",
-        "Vibes over everything 🌌",
-        "Bro science expert 📚",
-        "Staying unbothered 🧊",
-        "Built different 🦍",
-        "Talking trash, respectfully 🗣️",
-        "Flexing on the haters ✨",
-        "Living rent free in your head 🏠",
-        "Being sigma in silence 🤫"
-    ]
+    mood_statuses = {
+        "lazy": ["Too lazy to care 😴", "Scrolling with zero effort 🛋️"],
+        "hyped": ["Grinding 💪", "Maxing out gains 🏋️", "Cooking gains 🔥"],
+        "sarcastic": ["Living rent free in your head 🏠", "Talking trash, respectfully 🗣️"],
+        "chill": ["Vibes over everything 🌌", "Chillin’ with the Raw Meat Boyz 🍖"]
+    }
+    statuses = mood_statuses.get(current_mood, ["Grinding 💪"])
     status = random.choice(statuses)
     print(f"[STATUS] Meat Bro is now: {status}")
-    await client.change_presence(
-        activity=discord.CustomActivity(name=status)
-    )
+    await client.change_presence(activity=discord.CustomActivity(name=status))
 
 # -------- Run Bot --------
 client.run(DISCORD_BOT_TOKEN)
