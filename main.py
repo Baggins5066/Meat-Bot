@@ -103,13 +103,7 @@ async def on_message(message):
         history = history[-10:]
     conversation_history[message.channel.id] = history
 
-    should_reply = False
-    if client.user.mentioned_in(message):
-        should_reply = True
-    elif random.random() < REPLY_CHANCE:
-        should_reply = True
-    elif any(word in message.content.lower() for word in ["bro", "sigma", "alpha", "gym", "grind"]):
-        should_reply = True
+    should_reply = True
 
     if should_reply and perms.send_messages: # and can_reply_to(message.author.id):
         # fake typing chance
