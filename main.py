@@ -32,6 +32,11 @@ moods = ["lazy", "hyped", "sarcastic", "chill"]
 # Initialize Colorama
 init(autoreset=True)
 
+# -------- Logger with Timestamps --------
+def log(message, color=Fore.WHITE):
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"{Fore.LIGHTBLACK_EX}[{timestamp}]{Style.RESET_ALL} {color}{message}{Style.RESET_ALL}")
+
 # -------- LLM Response --------
 async def get_llm_response(prompt):
     import aiohttp
@@ -90,8 +95,8 @@ def mood_style():
 # -------- Events --------
 @client.event
 async def on_ready():
-    print(f"{Fore.GREEN}[READY]{Style.RESET_ALL} Logged in as {client.user} (ID: {client.user.id})")
-    print("------")
+    log(f"[READY] Logged in as {client.user} (ID: {client.user.id})", Fore.GREEN)
+    log("------")
     client.loop.create_task(random_chatter())
     cycle_mood.start()
     cycle_presence.start()
@@ -102,7 +107,7 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    print(f"{Fore.CYAN}[INCOMING]{Style.RESET_ALL}[#{message.channel}] {message.author}: {message.content}")
+    log(f"[INCOMING][#{message.channel}] {message.author}: {message.content}", Fore.CYAN)
 
     perms = message.channel.permissions_for(message.guild.me)
     if not (perms.send_messages and perms.read_messages):
@@ -127,7 +132,7 @@ async def on_message(message):
         if random.random() < 0.1:
             async with message.channel.typing():
                 await asyncio.sleep(random.uniform(2, 5))
-            print(f"{Fore.RED}[FAKE TYPING]{Style.RESET_ALL}[#{message.channel}] Meat Bro started typing then bailed.")
+            log(f"[FAKE TYPING][#{message.channel}] Meat Bro started typing then bailed.", Fore.RED)
             return
 
         async with message.channel.typing():
@@ -137,7 +142,7 @@ async def on_message(message):
                 f"User: {message.content}\nBot (mood={current_mood}): {mood_style()}"
             )
             response = await get_llm_response(prompt)
-            print(f"{Fore.GREEN}[OUTGOING]{Style.RESET_ALL}[#{message.channel}] {client.user}: {response}")
+            log(f"[OUTGOING][#{message.channel}] {client.user}: {response}", Fore.GREEN)
             await message.channel.send(response)
 
     # Emoji reactions
@@ -153,7 +158,7 @@ async def on_message(message):
         elif random.random() < 0.03:
             chosen = random.choice(["😎", "🍖"])
         if chosen:
-            print(f"{Fore.MAGENTA}[REACTION]{Style.RESET_ALL}[#{message.channel}] Added {chosen} to {message.author}'s message")
+            log(f"[REACTION][#{message.channel}] Added {chosen} to {message.author}'s message", Fore.MAGENTA)
             await message.add_reaction(chosen)
 
 
@@ -186,10 +191,10 @@ async def random_chatter():
                     lines = ["Late night sigma grind 🌙", "Server dead or just lazy bros? 😴", "Night bulk incoming 🍖"]
 
                 msg = random.choice(lines)
-                print(f"{Fore.GREEN}[OUTGOING]{Style.RESET_ALL}[#{channel}] {client.user} (random chatter): {msg}")
+                log(f"[OUTGOING][#{channel}] {client.user} (random chatter): {msg}", Fore.GREEN)
                 await channel.send(msg)
         except Exception as e:
-            print(f"{Fore.LIGHTRED_EX}[ERROR]{Style.RESET_ALL} Chatter error: {e}")
+            log(f"[ERROR] Chatter error: {e}", Fore.LIGHTRED_EX)
 
 
 # -------- Mood & Presence --------
@@ -197,7 +202,7 @@ async def random_chatter():
 async def cycle_mood():
     global current_mood
     current_mood = random.choice(moods)
-    print(f"{Fore.BLUE}[MOOD]{Style.RESET_ALL} Meat Bro is now {current_mood}")
+    log(f"[MOOD] Meat Bro is now {current_mood}", Fore.BLUE)
 
 
 @tasks.loop(minutes=30)
@@ -210,7 +215,7 @@ async def cycle_presence():
     }
     statuses = mood_statuses.get(current_mood, ["Grinding 💪"])
     status = random.choice(statuses)
-    print(f"{Fore.YELLOW}[STATUS]{Style.RESET_ALL} Meat Bro is now: {status}")
+    log(f"[STATUS] Meat Bro is now: {status}", Fore.YELLOW)
     await client.change_presence(activity=discord.CustomActivity(name=status))
 
 # -------- Run Bot --------
