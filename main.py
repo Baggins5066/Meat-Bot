@@ -3,6 +3,7 @@ import random
 import asyncio
 import datetime
 from discord.ext import tasks
+from colorama import Fore, Style, init
 
 # -------- CONFIG --------
 DISCORD_BOT_TOKEN = "MTQxNTAxMjkxOTkyMTYxMDg2NA.G1opZy.b5EH_jVe7l-8broIOfi4xTJCE7DsrrFZdO3jNk"
@@ -28,12 +29,14 @@ current_mood = "chill"      # bot's starting mood
 
 moods = ["lazy", "hyped", "sarcastic", "chill"]
 
+# Initialize Colorama
+init(autoreset=True)
+
 # -------- LLM Response --------
 async def get_llm_response(prompt):
     import aiohttp
     import json
 
-    # add quirks to personality
     quirks = [
         "Sometimes miscount reps on purpose.",
         "Always roasts cardio.",
@@ -89,7 +92,7 @@ def mood_style():
 # -------- Events --------
 @client.event
 async def on_ready():
-    print(f"Logged in as {client.user} (ID: {client.user.id})")
+    print(f"{Fore.GREEN}[READY]{Style.RESET_ALL} Logged in as {client.user} (ID: {client.user.id})")
     print("------")
     client.loop.create_task(random_chatter())
     cycle_mood.start()
@@ -101,7 +104,7 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    print(f"[INCOMING][#{message.channel}] {message.author}: {message.content}")
+    print(f"{Fore.CYAN}[INCOMING]{Style.RESET_ALL}[#{message.channel}] {message.author}: {message.content}")
 
     perms = message.channel.permissions_for(message.guild.me)
     if not (perms.send_messages and perms.read_messages):
@@ -126,7 +129,7 @@ async def on_message(message):
         if random.random() < 0.1:
             async with message.channel.typing():
                 await asyncio.sleep(random.uniform(2, 5))
-            print(f"[FAKE TYPING][#{message.channel}] Meat Bro started typing then bailed.")
+            print(f"{Fore.RED}[FAKE TYPING]{Style.RESET_ALL}[#{message.channel}] Meat Bro started typing then bailed.")
             return
 
         async with message.channel.typing():
@@ -136,7 +139,7 @@ async def on_message(message):
                 f"User: {message.content}\nBot (mood={current_mood}): {mood_style()}"
             )
             response = await get_llm_response(prompt)
-            print(f"[OUTGOING][#{message.channel}] {client.user}: {response}")
+            print(f"{Fore.GREEN}[OUTGOING]{Style.RESET_ALL}[#{message.channel}] {client.user}: {response}")
             await message.channel.send(response)
 
     # Emoji reactions
@@ -152,7 +155,7 @@ async def on_message(message):
         elif random.random() < 0.03:
             chosen = random.choice(["😎", "🍖"])
         if chosen:
-            print(f"[REACTION][#{message.channel}] Added {chosen} to {message.author}'s message")
+            print(f"{Fore.MAGENTA}[REACTION]{Style.RESET_ALL}[#{message.channel}] Added {chosen} to {message.author}'s message")
             await message.add_reaction(chosen)
 
 
@@ -185,10 +188,10 @@ async def random_chatter():
                     lines = ["Late night sigma grind 🌙", "Server dead or just lazy bros? 😴", "Night bulk incoming 🍖"]
 
                 msg = random.choice(lines)
-                print(f"[OUTGOING][#{channel}] {client.user} (random chatter): {msg}")
+                print(f"{Fore.GREEN}[OUTGOING]{Style.RESET_ALL}[#{channel}] {client.user} (random chatter): {msg}")
                 await channel.send(msg)
         except Exception as e:
-            print(f"Chatter error: {e}")
+            print(f"{Fore.LIGHTRED_EX}[ERROR]{Style.RESET_ALL} Chatter error: {e}")
 
 
 # -------- Mood & Presence --------
@@ -196,7 +199,7 @@ async def random_chatter():
 async def cycle_mood():
     global current_mood
     current_mood = random.choice(moods)
-    print(f"[MOOD] Meat Bro is now {current_mood}")
+    print(f"{Fore.BLUE}[MOOD]{Style.RESET_ALL} Meat Bro is now {current_mood}")
 
 
 @tasks.loop(minutes=30)
@@ -209,7 +212,7 @@ async def cycle_presence():
     }
     statuses = mood_statuses.get(current_mood, ["Grinding 💪"])
     status = random.choice(statuses)
-    print(f"[STATUS] Meat Bro is now: {status}")
+    print(f"{Fore.YELLOW}[STATUS]{Style.RESET_ALL} Meat Bro is now: {status}")
     await client.change_presence(activity=discord.CustomActivity(name=status))
 
 # -------- Run Bot --------
