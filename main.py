@@ -13,7 +13,6 @@ REPLY_CHANCE = 0.08          # ~8% chance to reply randomly
 CHATTER_MIN = 600            # min seconds between chatter (10 min)
 CHATTER_MAX = 3600           # max seconds between chatter (60 min)
 MOOD_CYCLE = 10800           # mood lasts ~3 hours
-RATE_LIMIT = 3               # max replies per user per 10 min
 
 # ------------------------
 
@@ -24,7 +23,6 @@ intents.members = True
 client = discord.Client(intents=intents)
 
 conversation_history = {}   # short memory per channel
-user_activity = {}          # rate limiting
 current_mood = "chill"      # bot's starting mood
 
 moods = ["lazy", "hyped", "sarcastic", "chill"]
@@ -67,20 +65,6 @@ async def get_llm_response(prompt):
                 return response_data["candidates"][0]["content"]["parts"][0]["text"]
 
     return f"Bro idk what to say rn lol (debug: {prompt})"
-
-
-# -------- Helpers --------
-def can_reply_to(user_id):
-    now = datetime.datetime.utcnow()
-    window_start = now - datetime.timedelta(minutes=10)
-    if user_id not in user_activity:
-        user_activity[user_id] = []
-    user_activity[user_id] = [t for t in user_activity[user_id] if t > window_start]
-    if len(user_activity[user_id]) < RATE_LIMIT:
-        user_activity[user_id].append(now)
-        return True
-    return False
-
 
 def mood_style():
     if current_mood == "lazy":
@@ -127,7 +111,7 @@ async def on_message(message):
     elif any(word in message.content.lower() for word in ["bro", "sigma", "alpha", "gym", "grind"]):
         should_reply = True
 
-    if should_reply and perms.send_messages and can_reply_to(message.author.id):
+    if should_reply and perms.send_messages: # and can_reply_to(message.author.id):
         # fake typing chance
         if random.random() < 0.1:
             async with message.channel.typing():
