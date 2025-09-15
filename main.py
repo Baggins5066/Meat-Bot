@@ -10,8 +10,6 @@ DISCORD_BOT_TOKEN = "MTQxNTAxMjkxOTkyMTYxMDg2NA.G1opZy.b5EH_jVe7l-8broIOfi4xTJCE
 LLM_API_KEY = "AIzaSyCcDyApw0IHAsDwPGUsbYTVOjfrUm1U5CM"
 
 REPLY_CHANCE = 0.08          # ~8% chance to reply randomly
-CHATTER_MIN = 600            # min seconds between chatter (10 min)
-CHATTER_MAX = 3600           # max seconds between chatter (60 min)
 MOOD_CYCLE = 10800           # mood lasts ~3 hours
 
 # ------------------------
@@ -79,7 +77,6 @@ def mood_style():
 async def on_ready():
     log(f"[READY] Logged in as {client.user} (ID: {client.user.id})", Fore.GREEN)
     log("------")
-    client.loop.create_task(random_chatter())
     cycle_mood.start()
     cycle_presence.start()
 
@@ -136,49 +133,12 @@ async def on_message(message):
             log(f"[REACTION][#{message.channel}] Added {chosen} to {message.author}'s message", Fore.MAGENTA)
             await message.add_reaction(chosen)
 
-
-# -------- Random Background Chatter --------
-async def random_chatter():
-    await client.wait_until_ready()
-    while not client.is_closed():
-        wait_time = random.randint(CHATTER_MIN, CHATTER_MAX)
-        await asyncio.sleep(wait_time)
-
-        if not client.guilds or random.random() > 0.5:
-            continue
-
-        guild = random.choice(client.guilds)
-        allowed_channels = [c for c in guild.text_channels if c.permissions_for(guild.me).send_messages]
-        if not allowed_channels:
-            continue
-
-        channel = random.choice(allowed_channels)
-        try:
-            async with channel.typing():
-                await asyncio.sleep(random.uniform(5, 30))
-
-                hour = datetime.datetime.utcnow().hour
-                if 5 <= hour < 12:
-                    lines = ["Rise and grind bros ☀️", "Protein pancakes anyone? 🥞", "Morning sigma mindset 💪"]
-                elif 12 <= hour < 18:
-                    lines = ["Midday grind never stops 🔥", "Protein shake o’clock 🍗", "Y’all better not skip legs 🦵"]
-                else:
-                    lines = ["Late night sigma grind 🌙", "Server dead or just lazy bros? 😴", "Night bulk incoming 🍖"]
-
-                msg = random.choice(lines)
-                log(f"[OUTGOING][#{channel}] {client.user} (random chatter): {msg}", Fore.GREEN)
-                await channel.send(msg)
-        except Exception as e:
-            log(f"[ERROR] Chatter error: {e}", Fore.LIGHTRED_EX)
-
-
 # -------- Mood & Presence --------
 @tasks.loop(seconds=MOOD_CYCLE)
 async def cycle_mood():
     global current_mood
     current_mood = random.choice(moods)
     log(f"[MOOD] Meat Bro is now {current_mood}", Fore.BLUE)
-
 
 @tasks.loop(minutes=30)
 async def cycle_presence():
