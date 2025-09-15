@@ -73,7 +73,6 @@ async def get_llm_response(prompt):
 @client.event
 async def on_ready():
     log(f"[READY] Logged in as {client.user} (ID: {client.user.id})", Fore.GREEN)
-    log("------")
     cycle_presence.start()
 
 @client.event
