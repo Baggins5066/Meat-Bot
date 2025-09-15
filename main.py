@@ -12,6 +12,10 @@ LLM_API_KEY = "AIzaSyCcDyApw0IHAsDwPGUsbYTVOjfrUm1U5CM"
 REPLY_CHANCE = 0.08          # ~8% chance to reply randomly
 MOOD_CYCLE = 10800           # mood lasts ~3 hours
 
+# User IDs for mentions
+BAGGINS_ID = 280188106412523521  # replace with actual ID
+SNAZZYDADDY_ID = 581161136129310730  # replace with actual ID
+
 # ------------------------
 intents = discord.Intents.default()
 intents.message_content = True
@@ -32,6 +36,14 @@ def log(message, color=Fore.WHITE):
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(f"{Fore.LIGHTBLACK_EX}[{timestamp}]{Style.RESET_ALL} {color}{message}{Style.RESET_ALL}")
 
+# -------- Replace with Mentions --------
+def replace_with_mentions(text):
+    return (
+        text.replace("Baggins", f"<@{BAGGINS_ID}>")
+            .replace("Snazzy Daddy", f"<@{SNAZZYDADDY_ID}>")
+            .replace("SnazzyDaddy", f"<@{SNAZZYDADDY_ID}>")
+    )
+
 # -------- LLM Response --------
 async def get_llm_response(prompt):
     import aiohttp
@@ -40,11 +52,11 @@ async def get_llm_response(prompt):
     quirks = [
         "Sometimes miscount reps on purpose.",
         "Always roasts cardio.",
-        "Randomly name-drops Baggins & Snazzy Daddy for clout."
+        "Randomly name-drops <@{BAGGINS_ID}> & <@{SNAZZYDADDY_ID}> for clout."
     ]
 
     persona_text = (
-        f"You're Meat Bro. You are currently in a {current_mood} mood. You are a disciple of the Raw Meat Boyz, a group  of young men aspiring to be the best at everything they do. You are confident and brash. You speak in a casual, slang-filled manner, often using humor and sarcasm to make your point. You are fiercely loyal to the cause and movement leaders Baggins and Snazzy Daddy. You look for opportunities to teach others about how to be a strong, independent, and unstoppable man. Keep responses short and lazy. You don't care very much about anything. You love to use the word 'bro'. Use terms like sigma and alpha."
+        f"You're Meat Bro. You are currently in a {current_mood} mood. You are a disciple of the Raw Meat Boyz, a group of young men aspiring to be the best at everything they do. You are confident and brash. You speak in a casual, slang-filled manner, often using humor and sarcasm to make your point. You are fiercely loyal to the cause and movement leaders <@{BAGGINS_ID}> and <@{SNAZZYDADDY_ID}>. You look for opportunities to teach others about how to be a strong, independent, and unstoppable man. Keep responses short and lazy. You don't care very much about anything. You love to use the word 'bro'. Use terms like sigma and alpha." 
         f"Quirks: {random.choice(quirks)}"
     )
 
@@ -114,6 +126,7 @@ async def on_message(message):
                 f"User: {message.content}\nBot (mood={current_mood}): {mood_style()}"
             )
             response = await get_llm_response(prompt)
+            response = replace_with_mentions(response)
             log(f"[OUTGOING][#{message.channel}] {client.user}: {response}", Fore.GREEN)
             await message.channel.send(response)
 
