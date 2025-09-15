@@ -1,6 +1,5 @@
 import discord
 import random
-import asyncio
 import datetime
 from discord.ext import tasks
 from colorama import Fore, Style, init
@@ -111,24 +110,15 @@ async def on_message(message):
 
     should_reply = True
 
-    if should_reply and perms.send_messages: # and can_reply_to(message.author.id):
-        # fake typing chance
-        if random.random() < 0.1:
-            async with message.channel.typing():
-                await asyncio.sleep(random.uniform(2, 5))
-            log(f"[FAKE TYPING][#{message.channel}] Meat Bro started typing then bailed.", Fore.RED)
-            return
-
-        async with message.channel.typing():
-            await asyncio.sleep(random.uniform(1, 3))
-            prompt = (
-                f"Recent chat history:\n{history}\n\n"
-                f"User: {message.content}\nBot (mood={current_mood}): {mood_style()}"
-            )
-            response = await get_llm_response(prompt)
-            response = replace_with_mentions(response)
-            log(f"[OUTGOING][#{message.channel}] {client.user}: {response}", Fore.GREEN)
-            await message.channel.send(response)
+    if should_reply and perms.send_messages:
+        prompt = (
+            f"Recent chat history:\n{history}\n\n"
+            f"User: {message.content}\nBot (mood={current_mood}): {mood_style()}"
+        )
+        response = await get_llm_response(prompt)
+        response = replace_with_mentions(response)
+        log(f"[OUTGOING][#{message.channel}] {client.user}: {response}", Fore.GREEN)
+        await message.channel.send(response)
 
     # Emoji reactions
     if perms.add_reactions:
