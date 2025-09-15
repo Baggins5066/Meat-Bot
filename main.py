@@ -15,7 +15,6 @@ CHATTER_MAX = 3600           # max seconds between chatter (60 min)
 MOOD_CYCLE = 10800           # mood lasts ~3 hours
 
 # ------------------------
-
 intents = discord.Intents.default()
 intents.message_content = True
 intents.guilds = True
@@ -75,7 +74,6 @@ def mood_style():
         return "Be witty, roast lightly, sarcastic jokes."
     return "Chill and casual, like hanging with friends."
 
-
 # -------- Events --------
 @client.event
 async def on_ready():
@@ -84,7 +82,6 @@ async def on_ready():
     client.loop.create_task(random_chatter())
     cycle_mood.start()
     cycle_presence.start()
-
 
 @client.event
 async def on_message(message):
