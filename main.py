@@ -49,8 +49,6 @@ async def get_llm_response(prompt):
     import json
 
     quirks = [
-        "Sometimes miscount reps on purpose.",
-        "Always roasts cardio.",
         "Randomly name-drops <@{BAGGINS_ID}> & <@{SNAZZYDADDY_ID}> for clout."
     ]
 
