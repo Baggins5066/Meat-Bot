@@ -9,7 +9,6 @@ DISCORD_BOT_TOKEN = "MTQxNTAxMjkxOTkyMTYxMDg2NA.G1opZy.b5EH_jVe7l-8broIOfi4xTJCE
 LLM_API_KEY = "AIzaSyCcDyApw0IHAsDwPGUsbYTVOjfrUm1U5CM"
 
 REPLY_CHANCE = 0.08          # ~8% chance to reply randomly
-MOOD_CYCLE = 10800           # mood lasts ~3 hours
 
 # User IDs for mentions
 BAGGINS_ID = 280188106412523521  # replace with actual ID
@@ -23,9 +22,6 @@ intents.members = True
 client = discord.Client(intents=intents)
 
 conversation_history = {}   # short memory per channel
-current_mood = "chill"      # bot's starting mood
-
-moods = ["lazy", "hyped", "sarcastic", "chill"]
 
 # Initialize Colorama
 init(autoreset=True)
@@ -54,7 +50,7 @@ async def get_llm_response(prompt):
     ]
 
     persona_text = (
-        f"You're Meat Bro. You are currently in a {current_mood} mood. You are a disciple of the Raw Meat Boyz, a group of young men aspiring to be the best at everything they do. You are confident and brash. You speak in a casual, slang-filled manner, often using humor and sarcasm to make your point. You are fiercely loyal to the cause and movement leaders <@{BAGGINS_ID}> and <@{SNAZZYDADDY_ID}>. You look for opportunities to teach others about how to be a strong, independent, and unstoppable man. Keep responses short and lazy. You don't care very much about anything. You love to use the word 'bro'. Use terms like sigma and alpha." 
+        f"You're Meat Bro. You are a disciple of the Raw Meat Boyz, a group of young men aspiring to be the best at everything they do. You are confident and brash. You speak in a casual, slang-filled manner, often using humor and sarcasm to make your point. You are fiercely loyal to the cause and movement leaders <@{BAGGINS_ID}> and <@{SNAZZYDADDY_ID}>. You look for opportunities to teach others about how to be a strong, independent, and unstoppable man. Keep responses short and lazy. You don't care very much about anything. You love to use the word 'bro'. Use terms like sigma and alpha." 
         f"Quirks: {random.choice(quirks)}"
     )
 
@@ -73,21 +69,11 @@ async def get_llm_response(prompt):
 
     return f"Bro idk what to say rn lol (debug: {prompt})"
 
-def mood_style():
-    if current_mood == "lazy":
-        return "Keep it super short, low energy, like you barely care."
-    if current_mood == "hyped":
-        return "Be extra energetic, lots of emojis, pumped up."
-    if current_mood == "sarcastic":
-        return "Be witty, roast lightly, sarcastic jokes."
-    return "Chill and casual, like hanging with friends."
-
 # -------- Events --------
 @client.event
 async def on_ready():
     log(f"[READY] Logged in as {client.user} (ID: {client.user.id})", Fore.GREEN)
     log("------")
-    cycle_mood.start()
     cycle_presence.start()
 
 @client.event
@@ -113,7 +99,7 @@ async def on_message(message):
         async with message.channel.typing():
             prompt = (
                 f"Recent chat history:\n{history}\n\n"
-                f"User: {message.content}\nBot (mood={current_mood}): {mood_style()}"
+                f"User: {message.content}"
             )
             response = await get_llm_response(prompt)
             response = replace_with_mentions(response)
@@ -136,22 +122,14 @@ async def on_message(message):
             log(f"[REACTION][#{message.channel}] Added {chosen} to {message.author}'s message", Fore.MAGENTA)
             await message.add_reaction(chosen)
 
-# -------- Mood & Presence --------
-@tasks.loop(seconds=MOOD_CYCLE)
-async def cycle_mood():
-    global current_mood
-    current_mood = random.choice(moods)
-    log(f"[MOOD] Meat Bro is now {current_mood}", Fore.BLUE)
-
 @tasks.loop(minutes=30)
 async def cycle_presence():
-    mood_statuses = {
+    statuses = {
         "lazy": ["Too lazy to care 😴", "Scrolling with zero effort 🛋️"],
         "hyped": ["Grinding 💪", "Maxing out gains 🏋️", "Cooking gains 🔥"],
         "sarcastic": ["Living rent free in your head 🏠", "Talking trash, respectfully 🗣️"],
         "chill": ["Vibes over everything 🌌", "Chillin’ with the Raw Meat Boyz 🍖"]
     }
-    statuses = mood_statuses.get(current_mood, ["Grinding 💪"])
     status = random.choice(statuses)
     log(f"[STATUS] Meat Bro is now: {status}", Fore.YELLOW)
     await client.change_presence(activity=discord.CustomActivity(name=status))
