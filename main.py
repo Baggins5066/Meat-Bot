@@ -111,14 +111,15 @@ async def on_message(message):
     should_reply = True
 
     if should_reply and perms.send_messages:
-        prompt = (
-            f"Recent chat history:\n{history}\n\n"
-            f"User: {message.content}\nBot (mood={current_mood}): {mood_style()}"
-        )
-        response = await get_llm_response(prompt)
-        response = replace_with_mentions(response)
-        log(f"[OUTGOING][#{message.channel}] {client.user}: {response}", Fore.GREEN)
-        await message.channel.send(response)
+        async with message.channel.typing():
+            prompt = (
+                f"Recent chat history:\n{history}\n\n"
+                f"User: {message.content}\nBot (mood={current_mood}): {mood_style()}"
+            )
+            response = await get_llm_response(prompt)
+            response = replace_with_mentions(response)
+            log(f"[OUTGOING][#{message.channel}] {client.user}: {response}", Fore.GREEN)
+            await message.channel.send(response)
 
     # Emoji reactions
     if perms.add_reactions:
