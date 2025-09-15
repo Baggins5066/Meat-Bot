@@ -125,15 +125,14 @@ async def on_message(message):
 @tasks.loop(minutes=30)
 async def cycle_presence():
     all_statuses = [
-        "Too lazy to care 😴",
-        "Scrolling with zero effort 🛋️",
+        "bored rn",
         "Grinding 💪",
-        "Maxing out gains 🏋️",
-        "Cooking gains 🔥",
-        "Living rent free in your head 🏠",
-        "Talking trash, respectfully 🗣️",
-        "Vibes over everything 🌌",
-        "Chillin’ with the Raw Meat Boyz 🍖"
+        "Lifting 🏋️",
+        "Chillin with boyz 🍖",
+        "Talking with the huzz",
+        "In the WAR ROOM with Snazzy Daddy and Baggins",
+        "hmu ahaha",
+        "Counting money 💸"
     ]
     status = random.choice(all_statuses)
     log(f"[STATUS] Meat Bro is now: {status}", Fore.YELLOW)
