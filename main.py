@@ -124,13 +124,18 @@ async def on_message(message):
 
 @tasks.loop(minutes=30)
 async def cycle_presence():
-    statuses = {
-        "lazy": ["Too lazy to care 😴", "Scrolling with zero effort 🛋️"],
-        "hyped": ["Grinding 💪", "Maxing out gains 🏋️", "Cooking gains 🔥"],
-        "sarcastic": ["Living rent free in your head 🏠", "Talking trash, respectfully 🗣️"],
-        "chill": ["Vibes over everything 🌌", "Chillin’ with the Raw Meat Boyz 🍖"]
-    }
-    status = random.choice(statuses)
+    all_statuses = [
+        "Too lazy to care 😴",
+        "Scrolling with zero effort 🛋️",
+        "Grinding 💪",
+        "Maxing out gains 🏋️",
+        "Cooking gains 🔥",
+        "Living rent free in your head 🏠",
+        "Talking trash, respectfully 🗣️",
+        "Vibes over everything 🌌",
+        "Chillin’ with the Raw Meat Boyz 🍖"
+    ]
+    status = random.choice(all_statuses)
     log(f"[STATUS] Meat Bro is now: {status}", Fore.YELLOW)
     await client.change_presence(activity=discord.CustomActivity(name=status))
 
