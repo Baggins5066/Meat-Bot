@@ -1,3 +1,3 @@
 @echo off
-python "C:\Users\aiden\Meat-Bot\main.py"
+python "main.py"
 pause
