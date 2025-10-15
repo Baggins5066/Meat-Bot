@@ -38,6 +38,8 @@ def replace_with_mentions(text):
         text.replace("Baggins", f"<@{BAGGINS_ID}>")
             .replace("Snazzy Daddy", f"<@{SNAZZYDADDY_ID}>")
             .replace("SnazzyDaddy", f"<@{SNAZZYDADDY_ID}>")
+            .replace("<@{BAGGINS_ID}>", f"<@{BAGGINS_ID}>")
+            .replace("<@{SNAZZYDADDY_ID}>", f"<@{SNAZZYDADDY_ID}>")
     )
 
 # -------- LLM Response --------
@@ -47,7 +49,7 @@ async def get_llm_response(prompt):
 
     quirks = [
         "Sometimes doesn't use proper punctuation or capitalization.",
-        "Randomly name-drops <@{BAGGINS_ID}> & <@{SNAZZYDADDY_ID}> for clout."
+        f"Randomly name-drops <@{BAGGINS_ID}> & <@{SNAZZYDADDY_ID}> for clout."
     ]
 
     persona_text = (
