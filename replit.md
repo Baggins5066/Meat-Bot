@@ -54,6 +54,12 @@ The bot runs automatically via the "Discord Bot" workflow. It will:
 2. Connect to Discord
 3. Start responding to messages and cycling status
 
+### Deployment
+The bot is configured for **Reserved VM (Background Worker)** deployment:
+- **Deployment Type**: VM (always-on background worker)
+- **Run Command**: `python main.py`
+- This configuration is appropriate for Discord bots that need to maintain persistent connections
+
 ## User Preferences
 None documented yet.
 
