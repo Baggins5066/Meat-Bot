@@ -1,12 +1,13 @@
 import discord
 import random
 import datetime
+import os
 from discord.ext import tasks
 from colorama import Fore, Style, init
 
 # -------- CONFIG --------
-DISCORD_BOT_TOKEN = "MTQxNTAxMjkxOTkyMTYxMDg2NA.G1opZy.b5EH_jVe7l-8broIOfi4xTJCE7DsrrFZdO3jNk"
-LLM_API_KEY = "AIzaSyCcDyApw0IHAsDwPGUsbYTVOjfrUm1U5CM"
+DISCORD_BOT_TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
+LLM_API_KEY = os.environ.get("LLM_API_KEY")
 
 REPLY_CHANCE = 0.08          # ~8% chance to reply randomly
 
@@ -138,4 +139,12 @@ async def cycle_presence():
     await client.change_presence(activity=discord.CustomActivity(name=status))
 
 # -------- Run Bot --------
-client.run(DISCORD_BOT_TOKEN)
+if __name__ == "__main__":
+    if not DISCORD_BOT_TOKEN:
+        log("[ERROR] DISCORD_BOT_TOKEN environment variable is not set!", Fore.RED)
+        exit(1)
+    if not LLM_API_KEY:
+        log("[ERROR] LLM_API_KEY environment variable is not set!", Fore.RED)
+        exit(1)
+    
+    client.run(DISCORD_BOT_TOKEN)
