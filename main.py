@@ -125,7 +125,7 @@ async def get_llm_response(prompt, current_user_id=None):
     except Exception as e:
         log(f"[LLM ERROR] {e}", Fore.RED)
 
-    return "Bro idk what to say rn lol"
+    return "huh"
 
 # -------- Events --------
 @client.event
