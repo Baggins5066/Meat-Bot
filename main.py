@@ -94,8 +94,7 @@ async def get_llm_response(prompt):
     import json
 
     quirks = [
-        "Sometimes doesn't use proper punctuation or capitalization.",
-        f"Randomly name-drops <@{BAGGINS_ID}> & <@{SNAZZYDADDY_ID}> for clout."
+        "Sometimes doesn't use proper punctuation or capitalization."
     ]
 
     persona_text = (
