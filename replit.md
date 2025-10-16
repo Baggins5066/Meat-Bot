@@ -7,6 +7,12 @@ This is a Discord bot named "Meat Bro" that embodies the persona of a confident,
 ✅ **Setup Complete** - Discord bot ready to run after API keys are configured
 
 ## Recent Changes
+- **2025-10-16**: Made bot reply logic much more conservative
+  - Completely rewrote decision prompt to default to NO unless explicitly engaged
+  - Added automatic reply for direct replies and mentions (bypasses AI check)
+  - Bot now only joins conversations when directly addressed or mentioned
+  - Explicitly prevents bot from interrupting conversations between other users
+  - Will no longer respond just because topic is gym/fitness related
 - **2025-10-16**: Improved mention behavior for Baggins and Snazzy Daddy
   - Removed random name-dropping quirk that forced unnecessary mentions
   - Bot now detects when talking directly to Baggins or Snazzy Daddy
@@ -49,12 +55,16 @@ This is a Discord bot named "Meat Bro" that embodies the persona of a confident,
 - `LLM_API_KEY`: Google Gemini API key
 
 ### Bot Configuration
-- **Reply Decision**: AI-powered decision system analyzes messages to determine if bot should respond
-- **Reply Rules**: Bot responds when:
-  - Message is directed at the bot or mentions it
-  - Conversation is about fitness, sigma/alpha lifestyle, or topics Meat Bro cares about
-  - Someone is asking for advice or needs bot input
-  - Avoids responding to casual chat between other users or simple acknowledgments
+- **Reply Decision**: Conservative AI-powered system that defaults to NOT responding
+- **Auto-Reply Triggers** (bypass AI check):
+  - Direct Discord replies to the bot's messages
+  - Messages that mention "Meat Bro" or tag the bot
+- **AI Reply Rules** (very conservative - defaults to NO):
+  - Only responds when message clearly asks for bot input
+  - Will NOT interrupt conversations between users (even about gym/fitness)
+  - Will NOT respond to casual statements or stories
+  - Will NOT respond if bot recently replied (unless directly mentioned)
+  - Explicitly avoids butting into ongoing conversations
 - **User IDs**: Hardcoded IDs for @Baggins and @SnazzyDaddy mentions
 - **Status Cycle**: Updates every 30 minutes
 
