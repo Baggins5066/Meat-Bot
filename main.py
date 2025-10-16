@@ -38,7 +38,7 @@ def replace_with_mentions(text):
         text.replace("Baggins", f"<@{BAGGINS_ID}>")
             .replace("Snazzy Daddy", f"<@{SNAZZYDADDY_ID}>")
             .replace("SnazzyDaddy", f"<@{SNAZZYDADDY_ID}>")
-			.replace("snazzydaddy", f"<@{SNAZZYDADDY_ID}>")
+                        .replace("snazzydaddy", f"<@{SNAZZYDADDY_ID}>")
             .replace("<@{BAGGINS_ID}>", f"<@{BAGGINS_ID}>")
             .replace("<@{SNAZZYDADDY_ID}>", f"<@{SNAZZYDADDY_ID}>")
     )
@@ -51,6 +51,9 @@ async def should_bot_reply(message, history):
     # Build context from recent conversation
     history_text = "\n".join([f"{h['author']}: {h['content']}" for h in history[-5:]])
     
+    # Check if this is a reply to the bot's last message
+    bot_was_last_speaker = len(history) > 0 and "Meat Bro" in history[-1].get('author', '')
+    
     decision_prompt = f"""You are deciding whether "Meat Bro" (a Discord bot) should respond to this message.
 
 Recent conversation:
@@ -58,13 +61,23 @@ Recent conversation:
 
 Current message from {message.author}: {message.content}
 
-Respond with ONLY "YES" or "NO" based on these rules:
-- YES if the message is directed at the bot, mentions the bot, or is a question/statement the bot should engage with
-- YES if the conversation is about fitness, sigma/alpha lifestyle, grinding, or topics Meat Bro would care about
-- YES if someone is asking for advice or seems to need the bot's input
-- NO if it's a casual chat between other users that doesn't need bot input
-- NO if the message is very short/simple like "ok", "lol", "nice" (unless directly replying to the bot)
-- NO if the bot just responded recently (within last 2 messages) unless directly addressed
+DEFAULT TO NO. Only respond YES if one of these conditions is clearly met:
+
+RESPOND YES ONLY IF:
+1. The message directly mentions "Meat Bro" or "meat bro" (bot name)
+2. The message is clearly a direct reply or question to the bot
+3. Someone explicitly asks the bot for advice/input (e.g., "what do you think?", "meat bro?")
+4. The message tags or @mentions the bot
+
+ALWAYS RESPOND NO IF:
+- Two or more people are having a conversation with each other (even about fitness/gym topics)
+- It's casual banter between users that doesn't need bot input
+- The message is a statement or comment not directed at anyone specific
+- Simple acknowledgments like "ok", "lol", "nice", "yeah", "cool"
+- The bot responded in the last 2 messages (unless directly mentioned/asked)
+- People are just sharing updates or stories with each other
+
+When in doubt, answer NO. The bot should NOT interrupt conversations.
 
 Answer: """
 
@@ -95,8 +108,8 @@ async def get_llm_response(prompt, current_user_id=None):
 
     quirks = [
         "Sometimes doesn't use proper punctuation or capitalization."
-		  "Sometimes quote a Bible verse to defend what you're saying."
-		  "Sometimes roast someone if they say something a liberal would say."
+                  "Sometimes quote a Bible verse to defend what you're saying."
+                  "Sometimes roast someone if they say something a liberal would say."
     ]
 
     persona_text = (
@@ -156,8 +169,16 @@ async def on_message(message):
         history = history[-10:]
     conversation_history[message.channel.id] = history
 
-    # Use AI to decide if bot should reply
-    should_reply = await should_bot_reply(message, history)
+    # Check if message is a direct reply to bot or mentions bot
+    is_direct_reply = message.reference and message.reference.resolved and message.reference.resolved.author == client.user
+    is_bot_mentioned = client.user in message.mentions or "meat bro" in message.content.lower()
+    
+    # Auto-reply if directly mentioned or replied to
+    if is_direct_reply or is_bot_mentioned:
+        should_reply = True
+    else:
+        # Use AI to decide if bot should reply
+        should_reply = await should_bot_reply(message, history)
 
     if should_reply and perms.send_messages:
         async with message.channel.typing():
