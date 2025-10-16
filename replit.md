@@ -7,6 +7,11 @@ This is a Discord bot named "Meat Bro" that embodies the persona of a confident,
 ✅ **Setup Complete** - Discord bot ready to run after API keys are configured
 
 ## Recent Changes
+- **2025-10-16**: Improved mention behavior for Baggins and Snazzy Daddy
+  - Removed random name-dropping quirk that forced unnecessary mentions
+  - Bot now detects when talking directly to Baggins or Snazzy Daddy
+  - Prevents mentioning users to themselves while still mentioning them when contextually relevant
+  - Added `current_user_id` parameter to `get_llm_response()` for user recognition
 - **2025-10-16**: Added AI-powered response decision system
   - Bot now uses AI to intelligently decide whether to respond to messages
   - Considers conversation context, message content, and recent interactions
@@ -21,6 +26,7 @@ This is a Discord bot named "Meat Bro" that embodies the persona of a confident,
 
 ## Features
 - **AI-Powered Response Decision**: Uses AI to intelligently decide when to respond based on message context, conversation history, and relevance
+- **Smart User Recognition**: Detects when talking to Baggins or Snazzy Daddy and avoids mentioning them to themselves
 - **LLM-Powered Responses**: Uses Google Gemini 2.5 Flash to generate contextual responses
 - **Conversation Memory**: Maintains short-term memory per channel (last 10 messages)
 - **Emoji Reactions**: Automatically reacts to messages with relevant emojis
