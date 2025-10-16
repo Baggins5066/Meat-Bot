@@ -10,11 +10,9 @@ from collections import deque
 DISCORD_BOT_TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
 LLM_API_KEY = os.environ.get("LLM_API_KEY")
 
-REPLY_CHANCE = 0.08          # ~8% chance to reply randomly
-
 # User IDs for mentions
-BAGGINS_ID = 280188106412523521  # replace with actual ID
-SNAZZYDADDY_ID = 581161136129310730  # replace with actual ID
+BAGGINS_ID = 280188106412523521  
+SNAZZYDADDY_ID = 581161136129310730  
 
 # ------------------------
 intents = discord.Intents.default()
