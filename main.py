@@ -42,6 +42,51 @@ def replace_with_mentions(text):
             .replace("<@{SNAZZYDADDY_ID}>", f"<@{SNAZZYDADDY_ID}>")
     )
 
+# -------- AI Decision: Should Bot Reply? --------
+async def should_bot_reply(message, history):
+    import aiohttp
+    import json
+    
+    # Build context from recent conversation
+    history_text = "\n".join([f"{h['author']}: {h['content']}" for h in history[-5:]])
+    
+    decision_prompt = f"""You are deciding whether "Meat Bro" (a Discord bot) should respond to this message.
+
+Recent conversation:
+{history_text}
+
+Current message from {message.author}: {message.content}
+
+Respond with ONLY "YES" or "NO" based on these rules:
+- YES if the message is directed at the bot, mentions the bot, or is a question/statement the bot should engage with
+- YES if the conversation is about fitness, sigma/alpha lifestyle, grinding, or topics Meat Bro would care about
+- YES if someone is asking for advice or seems to need the bot's input
+- NO if it's a casual chat between other users that doesn't need bot input
+- NO if the message is very short/simple like "ok", "lol", "nice" (unless directly replying to the bot)
+- NO if the bot just responded recently (within last 2 messages) unless directly addressed
+
+Answer: """
+
+    payload = {
+        "contents": [{"parts": [{"text": decision_prompt}]}],
+        "systemInstruction": {"parts": [{"text": "You are a decision-making assistant. Respond with only YES or NO."}]}
+    }
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key={LLM_API_KEY}"
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(payload)) as resp:
+                response_data = await resp.json()
+                if response_data and response_data.get("candidates"):
+                    decision = response_data["candidates"][0]["content"]["parts"][0]["text"].strip().upper()
+                    log(f"[AI DECISION] Should reply: {decision}", Fore.YELLOW)
+                    return "YES" in decision
+    except Exception as e:
+        log(f"[AI DECISION ERROR] {e}, defaulting to NO", Fore.RED)
+    
+    return False
+
 # -------- LLM Response --------
 async def get_llm_response(prompt):
     import aiohttp
@@ -95,7 +140,8 @@ async def on_message(message):
         history = history[-10:]
     conversation_history[message.channel.id] = history
 
-    should_reply = True
+    # Use AI to decide if bot should reply
+    should_reply = await should_bot_reply(message, history)
 
     if should_reply and perms.send_messages:
         async with message.channel.typing():

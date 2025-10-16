@@ -7,6 +7,11 @@ This is a Discord bot named "Meat Bro" that embodies the persona of a confident,
 ✅ **Setup Complete** - Discord bot ready to run after API keys are configured
 
 ## Recent Changes
+- **2025-10-16**: Added AI-powered response decision system
+  - Bot now uses AI to intelligently decide whether to respond to messages
+  - Considers conversation context, message content, and recent interactions
+  - Prevents spam by avoiding responses to casual chatter that doesn't need bot input
+  - New `should_bot_reply()` function analyzes each message before responding
 - **2025-10-15**: Initial Replit environment setup
   - Migrated hardcoded API keys to environment variables for security
   - Created requirements.txt for dependency management
@@ -15,11 +20,12 @@ This is a Discord bot named "Meat Bro" that embodies the persona of a confident,
   - Added error handling for missing API keys
 
 ## Features
+- **AI-Powered Response Decision**: Uses AI to intelligently decide when to respond based on message context, conversation history, and relevance
 - **LLM-Powered Responses**: Uses Google Gemini 2.5 Flash to generate contextual responses
 - **Conversation Memory**: Maintains short-term memory per channel (last 10 messages)
 - **Emoji Reactions**: Automatically reacts to messages with relevant emojis
 - **Dynamic Status**: Changes bot status every 30 minutes with random messages
-- **Colorful Logging**: Uses colorama for timestamped, color-coded console logs
+- **Colorful Logging**: Uses colorama for timestamped, color-coded console logs with AI decision tracking
 
 ## Project Architecture
 
@@ -37,7 +43,12 @@ This is a Discord bot named "Meat Bro" that embodies the persona of a confident,
 - `LLM_API_KEY`: Google Gemini API key
 
 ### Bot Configuration
-- **Reply Chance**: 8% random reply probability (currently set to always reply - `should_reply = True`)
+- **Reply Decision**: AI-powered decision system analyzes messages to determine if bot should respond
+- **Reply Rules**: Bot responds when:
+  - Message is directed at the bot or mentions it
+  - Conversation is about fitness, sigma/alpha lifestyle, or topics Meat Bro cares about
+  - Someone is asking for advice or needs bot input
+  - Avoids responding to casual chat between other users or simple acknowledgments
 - **User IDs**: Hardcoded IDs for @Baggins and @SnazzyDaddy mentions
 - **Status Cycle**: Updates every 30 minutes
 
