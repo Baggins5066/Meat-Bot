@@ -109,18 +109,22 @@ async def get_llm_response(prompt):
 
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key={LLM_API_KEY}"
 
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(payload)) as resp:
-            response_data = await resp.json()
-            if response_data and response_data.get("candidates"):
-                return response_data["candidates"][0]["content"]["parts"][0]["text"]
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(payload)) as resp:
+                response_data = await resp.json()
+                if response_data and response_data.get("candidates"):
+                    return response_data["candidates"][0]["content"]["parts"][0]["text"]
+    except Exception as e:
+        log(f"[LLM ERROR] {e}", Fore.RED)
 
-    return f"Bro idk what to say rn lol (debug: {prompt})"
+    return "Bro idk what to say rn lol"
 
 # -------- Events --------
 @client.event
 async def on_ready():
-    log(f"[READY] Logged in as {client.user} (ID: {client.user.id})", Fore.GREEN)
+    if client.user:
+        log(f"[READY] Logged in as {client.user} (ID: {client.user.id})", Fore.GREEN)
     cycle_presence.start()
 
 @client.event
