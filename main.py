@@ -89,7 +89,7 @@ Answer: """
     return False
 
 # -------- LLM Response --------
-async def get_llm_response(prompt):
+async def get_llm_response(prompt, current_user_id=None):
     import aiohttp
     import json
 
@@ -101,6 +101,11 @@ async def get_llm_response(prompt):
         f"You're Meat Bro. You are a disciple of the Raw Meat Boyz, a group of young men aspiring to be the best at everything they do. You are confident and brash. You speak in a casual, slang-filled manner, often using humor and sarcasm to make your point. You are fiercely loyal to the cause and movement leaders <@{BAGGINS_ID}> and <@{SNAZZYDADDY_ID}>. You look for opportunities to teach others about how to be a strong, independent, and unstoppable man. Keep responses short and lazy. You don't care very much about anything. You love to use the word 'bro'. Use terms like sigma and alpha." 
         f"Quirks: {random.choice(quirks)}"
     )
+    
+    if current_user_id == BAGGINS_ID:
+        persona_text += "\n\nIMPORTANT: You are currently talking to Baggins directly. Do NOT mention or tag Baggins in your response."
+    elif current_user_id == SNAZZYDADDY_ID:
+        persona_text += "\n\nIMPORTANT: You are currently talking to Snazzy Daddy directly. Do NOT mention or tag Snazzy Daddy in your response."
 
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
@@ -162,7 +167,7 @@ async def on_message(message):
                 f"Recent chat history:\n{history}\n\n"
                 f"User: {message.content}"
             )
-            response = await get_llm_response(prompt)
+            response = await get_llm_response(prompt, current_user_id=message.author.id)
             response = replace_with_mentions(response)
             log(f"[OUTGOING][#{message.channel}] {client.user}: {response}", Fore.GREEN)
             await message.channel.send(response)
