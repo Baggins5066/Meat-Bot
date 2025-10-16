@@ -23,6 +23,7 @@ intents.members = True
 client = discord.Client(intents=intents)
 
 conversation_history = {}   # short memory per channel
+processed_messages = set()  # track processed message IDs to prevent duplicates
 
 # Initialize Colorama
 init(autoreset=True)
@@ -131,6 +132,15 @@ async def on_ready():
 async def on_message(message):
     if message.author == client.user:
         return
+
+    # Prevent processing the same message twice
+    if message.id in processed_messages:
+        return
+    processed_messages.add(message.id)
+    
+    # Keep processed_messages set from growing indefinitely
+    if len(processed_messages) > 1000:
+        processed_messages.clear()
 
     log(f"[INCOMING][#{message.channel}] {message.author}: {message.content}", Fore.CYAN)
 
