@@ -4,6 +4,7 @@ import datetime
 import os
 from discord.ext import tasks
 from colorama import Fore, Style, init
+from collections import deque
 
 # -------- CONFIG --------
 DISCORD_BOT_TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
@@ -23,7 +24,7 @@ intents.members = True
 client = discord.Client(intents=intents)
 
 conversation_history = {}   # short memory per channel
-processed_messages = set()  # track processed message IDs to prevent duplicates
+processed_messages = deque(maxlen=1000)  # track processed message IDs to prevent duplicates
 
 # Initialize Colorama
 init(autoreset=True)
@@ -140,11 +141,7 @@ async def on_message(message):
     # Prevent processing the same message twice
     if message.id in processed_messages:
         return
-    processed_messages.add(message.id)
-    
-    # Keep processed_messages set from growing indefinitely
-    if len(processed_messages) > 1000:
-        processed_messages.clear()
+    processed_messages.append(message.id)
 
     log(f"[INCOMING][#{message.channel}] {message.author}: {message.content}", Fore.CYAN)
 
