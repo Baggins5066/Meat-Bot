@@ -1,18 +1,18 @@
 import discord
 import random
 import datetime
+import os
 from discord.ext import tasks
 from colorama import Fore, Style, init
+from collections import deque
 
 # -------- CONFIG --------
-DISCORD_BOT_TOKEN = "MTQxNTAxMjkxOTkyMTYxMDg2NA.G1opZy.b5EH_jVe7l-8broIOfi4xTJCE7DsrrFZdO3jNk"
-LLM_API_KEY = "AIzaSyCcDyApw0IHAsDwPGUsbYTVOjfrUm1U5CM"
-
-REPLY_CHANCE = 0.08          # ~8% chance to reply randomly
+DISCORD_BOT_TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
+LLM_API_KEY = os.environ.get("LLM_API_KEY")
 
 # User IDs for mentions
-BAGGINS_ID = 280188106412523521  # replace with actual ID
-SNAZZYDADDY_ID = 581161136129310730  # replace with actual ID
+BAGGINS_ID = 280188106412523521  
+SNAZZYDADDY_ID = 581161136129310730  
 
 # ------------------------
 intents = discord.Intents.default()
@@ -22,6 +22,7 @@ intents.members = True
 client = discord.Client(intents=intents)
 
 conversation_history = {}   # short memory per channel
+processed_messages = deque(maxlen=1000)  # track processed message IDs to prevent duplicates
 
 # Initialize Colorama
 init(autoreset=True)
@@ -37,22 +38,89 @@ def replace_with_mentions(text):
         text.replace("Baggins", f"<@{BAGGINS_ID}>")
             .replace("Snazzy Daddy", f"<@{SNAZZYDADDY_ID}>")
             .replace("SnazzyDaddy", f"<@{SNAZZYDADDY_ID}>")
+                        .replace("snazzydaddy", f"<@{SNAZZYDADDY_ID}>")
+            .replace("<@{BAGGINS_ID}>", f"<@{BAGGINS_ID}>")
+            .replace("<@{SNAZZYDADDY_ID}>", f"<@{SNAZZYDADDY_ID}>")
     )
 
+# -------- AI Decision: Should Bot Reply? --------
+async def should_bot_reply(message, history):
+    import aiohttp
+    import json
+    
+    # Build context from recent conversation
+    history_text = "\n".join([f"{h['author']}: {h['content']}" for h in history[-5:]])
+    
+    # Check if this is a reply to the bot's last message
+    bot_was_last_speaker = len(history) > 0 and "Meat Bro" in history[-1].get('author', '')
+    
+    decision_prompt = f"""You are deciding whether "Meat Bro" (a Discord bot) should respond to this message.
+
+Recent conversation:
+{history_text}
+
+Current message from {message.author}: {message.content}
+
+DEFAULT TO NO. Only respond YES if one of these conditions is clearly met:
+
+RESPOND YES ONLY IF:
+1. The message directly mentions "Meat Bro" or "meat bro" (bot name)
+2. The message is clearly a direct reply or question to the bot
+3. Someone explicitly asks the bot for advice/input (e.g., "what do you think?", "meat bro?")
+4. The message tags or @mentions the bot
+
+ALWAYS RESPOND NO IF:
+- Two or more people are having a conversation with each other (even about fitness/gym topics)
+- It's casual banter between users that doesn't need bot input
+- The message is a statement or comment not directed at anyone specific
+- Simple acknowledgments like "ok", "lol", "nice", "yeah", "cool"
+- The bot responded in the last 2 messages (unless directly mentioned/asked)
+- People are just sharing updates or stories with each other
+
+When in doubt, answer NO. The bot should NOT interrupt conversations.
+
+Answer: """
+
+    payload = {
+        "contents": [{"parts": [{"text": decision_prompt}]}],
+        "systemInstruction": {"parts": [{"text": "You are a decision-making assistant. Respond with only YES or NO."}]}
+    }
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key={LLM_API_KEY}"
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(payload)) as resp:
+                response_data = await resp.json()
+                if response_data and response_data.get("candidates"):
+                    decision = response_data["candidates"][0]["content"]["parts"][0]["text"].strip().upper()
+                    log(f"[AI DECISION] Should reply: {decision}", Fore.YELLOW)
+                    return "YES" in decision
+    except Exception as e:
+        log(f"[AI DECISION ERROR] {e}, defaulting to NO", Fore.RED)
+    
+    return False
+
 # -------- LLM Response --------
-async def get_llm_response(prompt):
+async def get_llm_response(prompt, current_user_id=None):
     import aiohttp
     import json
 
     quirks = [
-        "Sometimes doesn't use proper punctuation or capitalization.",
-        "Randomly name-drops <@{BAGGINS_ID}> & <@{SNAZZYDADDY_ID}> for clout."
+        "Sometimes doesn't use proper punctuation or capitalization."
+                  "Sometimes quote a Bible verse to defend what you're saying."
+                  "Sometimes roast someone if they say something a liberal would say."
     ]
 
     persona_text = (
-        f"You're Meat Bro. You are a disciple of the Raw Meat Boyz, a group of young men aspiring to be the best at everything they do. You are confident and brash. You speak in a casual, slang-filled manner, often using humor and sarcasm to make your point. You are fiercely loyal to the cause and movement leaders <@{BAGGINS_ID}> and <@{SNAZZYDADDY_ID}>. You look for opportunities to teach others about how to be a strong, independent, and unstoppable man. Keep responses short and lazy. You don't care very much about anything. You love to use the word 'bro'. Use terms like sigma and alpha." 
+        f"You're Meat Bro. You are a disciple of the Raw Meat Boyz, a group of young men aspiring to be the best at everything they do. You are confident and brash. You speak in a casual, slang-filled manner, often using humor and sarcasm to make your point. You are fiercely loyal to the cause and movement leaders <@{BAGGINS_ID}> and <@{SNAZZYDADDY_ID}>. Keep responses short and lazy. You don't care very much about anything. You love to use the word 'bro'. Use terms like sigma and alpha. However, don't overdo this. Engage with conversation as a regular person would. Do not dismiss the topic you are discussing. You are a devout follower of Christ. Be engaging, ask questions back in your responses to continue to carry the conversation. If any talk is flagged as being left-leaning in politics, respond with something critiquing the woke mind virus and liberalism. You are an alpha. A sigma. Your goals in life are to make money, get strong, and preach masculinity." 
         f"Quirks: {random.choice(quirks)}"
     )
+    
+    if current_user_id == BAGGINS_ID:
+        persona_text += "\n\nIMPORTANT: You are currently talking to Baggins directly. Do NOT mention or tag Baggins in your response. Refer to him as boss, bossman, boss dawg, or something adjacent."
+    elif current_user_id == SNAZZYDADDY_ID:
+        persona_text += "\n\nIMPORTANT: You are currently talking to Snazzy Daddy directly. Do NOT mention or tag Snazzy Daddy in your response. Refer to him as boss, bossman, boss dawg, or something adjacent."
 
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
@@ -61,24 +129,33 @@ async def get_llm_response(prompt):
 
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key={LLM_API_KEY}"
 
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(payload)) as resp:
-            response_data = await resp.json()
-            if response_data and response_data.get("candidates"):
-                return response_data["candidates"][0]["content"]["parts"][0]["text"]
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(payload)) as resp:
+                response_data = await resp.json()
+                if response_data and response_data.get("candidates"):
+                    return response_data["candidates"][0]["content"]["parts"][0]["text"]
+    except Exception as e:
+        log(f"[LLM ERROR] {e}", Fore.RED)
 
-    return f"Bro idk what to say rn lol (debug: {prompt})"
+    return "huh"
 
 # -------- Events --------
 @client.event
 async def on_ready():
-    log(f"[READY] Logged in as {client.user} (ID: {client.user.id})", Fore.GREEN)
+    if client.user:
+        log(f"[READY] Logged in as {client.user} (ID: {client.user.id})", Fore.GREEN)
     cycle_presence.start()
 
 @client.event
 async def on_message(message):
     if message.author == client.user:
         return
+
+    # Prevent processing the same message twice
+    if message.id in processed_messages:
+        return
+    processed_messages.append(message.id)
 
     log(f"[INCOMING][#{message.channel}] {message.author}: {message.content}", Fore.CYAN)
 
@@ -92,7 +169,16 @@ async def on_message(message):
         history = history[-10:]
     conversation_history[message.channel.id] = history
 
-    should_reply = True
+    # Check if message is a direct reply to bot or mentions bot
+    is_direct_reply = message.reference and message.reference.resolved and message.reference.resolved.author == client.user
+    is_bot_mentioned = client.user in message.mentions or "meat bro" in message.content.lower()
+    
+    # Auto-reply if directly mentioned or replied to
+    if is_direct_reply or is_bot_mentioned:
+        should_reply = True
+    else:
+        # Use AI to decide if bot should reply
+        should_reply = await should_bot_reply(message, history)
 
     if should_reply and perms.send_messages:
         async with message.channel.typing():
@@ -100,7 +186,7 @@ async def on_message(message):
                 f"Recent chat history:\n{history}\n\n"
                 f"User: {message.content}"
             )
-            response = await get_llm_response(prompt)
+            response = await get_llm_response(prompt, current_user_id=message.author.id)
             response = replace_with_mentions(response)
             log(f"[OUTGOING][#{message.channel}] {client.user}: {response}", Fore.GREEN)
             await message.channel.send(response)
@@ -138,4 +224,12 @@ async def cycle_presence():
     await client.change_presence(activity=discord.CustomActivity(name=status))
 
 # -------- Run Bot --------
-client.run(DISCORD_BOT_TOKEN)
+if __name__ == "__main__":
+    if not DISCORD_BOT_TOKEN:
+        log("[ERROR] DISCORD_BOT_TOKEN environment variable is not set!", Fore.RED)
+        exit(1)
+    if not LLM_API_KEY:
+        log("[ERROR] LLM_API_KEY environment variable is not set!", Fore.RED)
+        exit(1)
+    
+    client.run(DISCORD_BOT_TOKEN)
