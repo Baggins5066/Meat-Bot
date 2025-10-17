@@ -7,6 +7,10 @@ This is a Discord bot named "Meat Bro" that embodies the persona of a confident,
 ✅ **Setup Complete** - Discord bot ready to run after API keys are configured
 
 ## Recent Changes
+- **2025-10-17**: Refactored project structure into modular files
+  - Split single main.py into organized components: bot.py, config.py, llm.py, utils.py
+  - Updated workflow to run bot.py instead of main.py
+  - Improved code organization and maintainability
 - **2025-10-16**: Made bot reply logic much more conservative
   - Completely rewrote decision prompt to default to NO unless explicitly engaged
   - Added automatic reply for direct replies and mentions (bypasses AI check)
@@ -42,7 +46,10 @@ This is a Discord bot named "Meat Bro" that embodies the persona of a confident,
 ## Project Architecture
 
 ### Main Components
-- **main.py**: Core bot logic including Discord event handlers, LLM integration, and message processing
+- **bot.py**: Core bot logic including Discord event handlers and message processing
+- **config.py**: Configuration settings, API keys, and bot status messages
+- **llm.py**: LLM integration for AI-powered responses and decision-making
+- **utils.py**: Utility functions for logging and user mention handling
 - **requirements.txt**: Python dependencies (discord.py, colorama, aiohttp)
 
 ### Dependencies
@@ -84,7 +91,7 @@ The bot runs automatically via the "Discord Bot" workflow. It will:
 ### Deployment
 The bot is configured for **Reserved VM (Background Worker)** deployment:
 - **Deployment Type**: VM (always-on background worker)
-- **Run Command**: `python main.py`
+- **Run Command**: `python bot.py`
 - This configuration is appropriate for Discord bots that need to maintain persistent connections
 
 ## User Preferences
