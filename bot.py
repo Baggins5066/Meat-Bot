@@ -69,6 +69,10 @@ async def on_message(message):
             log(f"[OUTGOING][#{message.channel}] {client.user}: {response}", Fore.GREEN)
             await message.channel.send(response)
 
+            # Add bot's response to history
+            history.append({"author": str(client.user), "content": response})
+            conversation_history[message.channel.id] = history
+
     # Emoji reactions
     if perms.add_reactions:
         lowered = message.content.lower()
