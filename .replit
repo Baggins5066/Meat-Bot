@@ -29,6 +29,6 @@ task = "shell.exec"
 args = "python bot.py"
 
 [deployment]
-deploymentTarget = "gce"
-run = ["python", "main.py"]
+deploymentTarget = "vm"
+run = ["python", "bot.py"]
 ignorePorts = true
