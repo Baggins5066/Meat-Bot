@@ -9,9 +9,6 @@ async def should_bot_reply(message, history):
     # Build context from recent conversation
     history_text = "\n".join([f"{h['author']}: {h['content']}" for h in history[-5:]])
 
-    # Check if this is a reply to the bot's last message
-    bot_was_last_speaker = len(history) > 0 and "Meat Bro" in history[-1].get('author', '')
-
     decision_prompt = f"""You are deciding whether "Meat Bro" (a Discord bot) should respond to this message.
 
 Recent conversation:
