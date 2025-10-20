@@ -81,3 +81,37 @@ async def get_llm_response(prompt, current_user_id=None):
         log(f"[LLM ERROR] {e}", Fore.RED)
 
     return "huh"
+
+
+# -------- Status Generation --------
+async def generate_statuses(example_statuses):
+    log("[STATUS] Generating new statuses...", Fore.CYAN)
+
+    prompt = f"""Generate a list of 24 unique, short, casual, and satirically funny statuses for a Discord bot named "Meat Bro".
+
+These statuses should be inspired by the following examples, but not identical:
+- {"\n- ".join(example_statuses)}
+
+The statuses should be in the same vibe and tone as the examples. Each status should be on a new line. Do not include any extra text or formatting.
+"""
+
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}],
+        "systemInstruction": {"parts": [{"text": "You are a creative assistant. Generate a list of 24 Discord statuses."}]}
+    }
+
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key={LLM_API_KEY}"
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(payload)) as resp:
+                response_data = await resp.json()
+                if response_data and response_data.get("candidates"):
+                    text = response_data["candidates"][0]["content"]["parts"][0]["text"]
+                    statuses = [status.strip() for status in text.split("\n") if status.strip()]
+                    log(f"[STATUS] Generated {len(statuses)} new statuses.", Fore.GREEN)
+                    return statuses
+    except Exception as e:
+        log(f"[STATUS GEN ERROR] {e}", Fore.RED)
+
+    return []
