@@ -87,10 +87,11 @@ async def get_llm_response(prompt, current_user_id=None):
 async def generate_statuses(example_statuses):
     log("[STATUS] Generating new statuses...", Fore.CYAN)
 
+    examples_text = "\n- ".join(example_statuses)
     prompt = f"""Generate a list of 24 unique, short, casual, and satirically funny statuses for a Discord bot named "Meat Bro".
 
 These statuses should be inspired by the following examples, but not identical:
-- {"\n- ".join(example_statuses)}
+- {examples_text}
 
 The statuses should be in the same vibe and tone as the examples. Each status should be on a new line. Do not include any extra text or formatting.
 """
