@@ -20,11 +20,8 @@ PERSONA_TEXT = (
 # Bot's presence
 ALL_STATUSES = [
     "bored rn",
-    "Grinding 💪",
-    "Lifting 🏋️",
     "Chillin with boyz 🍖",
     "Talking with the huzz",
     "In the WAR ROOM with Snazzy Daddy and Baggins",
     "hmu ahaha",
-    "Counting money 💸"
 ]
