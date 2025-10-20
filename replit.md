@@ -4,9 +4,12 @@
 This is a Discord bot named "Meat Bro" that embodies the persona of a confident, brash disciple of the "Raw Meat Boyz" movement. The bot uses Google's Gemini LLM API to generate responses and interacts with Discord users in a casual, slang-filled manner.
 
 ## Project Status
-✅ **Setup Complete** - Discord bot ready to run after API keys are configured
+✅ **Setup Complete** - Discord bot ready to deploy and run 24/7
 
 ## Recent Changes
+- **2025-10-20**: Configured deployment settings for production
+  - Set up VM deployment configuration for always-on operation
+  - Bot is now ready to be published and run 24/7 with dedicated resources
 - **2025-10-17**: Refactored project structure into modular files
   - Split single main.py into organized components: bot.py, config.py, llm.py, utils.py
   - Updated workflow to run bot.py instead of main.py
