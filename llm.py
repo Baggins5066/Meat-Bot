@@ -16,23 +16,8 @@ Recent conversation:
 
 Current message from {message.author}: {message.content}
 
-DEFAULT TO NO. Only respond YES if one of these conditions is clearly met:
-
-RESPOND YES ONLY IF:
-1. The message directly mentions "Meat Bro" or "meat bro" (bot name)
-2. The message is clearly a direct reply or question to the bot
-3. Someone explicitly asks the bot for advice/input (e.g., "what do you think?", "meat bro?")
-4. The message tags or @mentions the bot
-
-ALWAYS RESPOND NO IF:
-- Two or more people are having a conversation with each other (even about fitness/gym topics)
-- It's casual banter between users that doesn't need bot input
-- The message is a statement or comment not directed at anyone specific
-- Simple acknowledgments like "ok", "lol", "nice", "yeah", "cool"
-- The bot responded in the last 2 messages (unless directly mentioned/asked)
-- People are just sharing updates or stories with each other
-
-When in doubt, answer NO. The bot should NOT interrupt conversations.
+Should the bot respond to this message?
+Return only "YES" or "NO".
 
 Answer: """
 
