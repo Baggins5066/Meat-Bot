@@ -24,6 +24,11 @@ generated_statuses = deque()
 async def on_ready():
     if client.user:
         log(f"[READY] Logged in as {client.user} (ID: {client.user.id})", Fore.GREEN)
+
+    log("Connected to the following servers:")
+    for guild in client.guilds:
+        log(f"- {guild.name} (ID: {guild.id})")
+
     cycle_presence.start()
 
 @client.event
