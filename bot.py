@@ -79,21 +79,6 @@ async def on_message(message):
             history.append({"author": str(client.user), "content": response})
             conversation_history[message.channel.id] = history
 
-    # Emoji reactions
-    if perms.add_reactions:
-        lowered = message.content.lower()
-        chosen = None
-        if any(w in lowered for w in ["gym", "lift", "workout"]):
-            chosen = "💪"
-        elif any(w in lowered for w in ["lol", "funny", "lmao"]):
-            chosen = "😂"
-        elif "fire" in lowered or "grind" in lowered:
-            chosen = "🔥"
-        elif random.random() < 0.03:
-            chosen = random.choice(["😎", "🍖"])
-        if chosen:
-            log(f"[REACTION][#{message.channel}] Added {chosen} to {message.author}'s message", Fore.MAGENTA)
-            await message.add_reaction(chosen)
 
 @tasks.loop(hours=1)
 async def cycle_presence():
