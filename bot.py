@@ -18,6 +18,7 @@ client = discord.Client(intents=intents)
 conversation_history = {}   # short memory per channel
 processed_messages = deque(maxlen=1000)  # track processed message IDs to prevent duplicates
 generated_statuses = deque()
+is_replying = False # <-- ADD THIS LINE
 
 # -------- Discord Events --------
 @client.event
@@ -33,6 +34,11 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+    global is_replying
+    if is_replying:
+        log(f"[BUSY] Ignoring message from {message.author} while replying.", Fore.YELLOW)
+        return
+
     if message.author == client.user:
         return
 
@@ -65,19 +71,23 @@ async def on_message(message):
         should_reply = await should_bot_reply(message, history)
 
     if should_reply and perms.send_messages:
-        async with message.channel.typing():
-            prompt = (
-                f"Recent chat history:\n{history}\n\n"
-                f"User: {message.content}"
-            )
-            response = await get_llm_response(prompt, current_user_id=message.author.id)
-            response = replace_with_mentions(response)
-            log(f"[OUTGOING][#{message.channel}] {client.user}: {response}", Fore.GREEN)
-            await message.channel.send(response)
+        try:
+            is_replying = True
+            async with message.channel.typing():
+                prompt = (
+                    f"Recent chat history:\n{history}\n\n"
+                    f"User: {message.content}"
+                )
+                response = await get_llm_response(prompt, current_user_id=message.author.id)
+                response = replace_with_mentions(response)
+                log(f"[OUTGOING][#{message.channel}] {client.user}: {response}", Fore.GREEN)
+                await message.channel.send(response)
 
-            # Add bot's response to history
-            history.append({"author": str(client.user), "content": response})
-            conversation_history[message.channel.id] = history
+                # Add bot's response to history
+                history.append({"author": str(client.user), "content": response})
+                conversation_history[message.channel.id] = history
+        finally:
+            is_replying = False
 
 
 @tasks.loop(hours=1)
