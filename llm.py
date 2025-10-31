@@ -16,7 +16,7 @@ Recent conversation:
 
 Current message from {message.author}: {message.content}
 
-Should the bot respond to this message? Is it referring to Meat Bro? 
+Should the bot respond to this message? Is it referring to Meat Bro? Respond sparingly.
 Return only "YES" or "NO".
 
 Answer: """
