@@ -22,15 +22,21 @@ Return only "YES" or "NO".
 Answer: """
 
     payload = {
-        "contents": [{"parts": [{"text": decision_prompt}]}],
+        "contents": [
+            {"role": "user", "parts": [{"text": decision_prompt}]}
+        ],
         "systemInstruction": {"parts": [{"text": "You are a decision-making assistant. Respond with only YES or NO."}]}
     }
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key={LLM_API_KEY}"
+    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+    headers = {
+        "Content-Type": "application/json",
+        "x-goog-api-key": LLM_API_KEY
+    }
 
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(payload)) as resp:
+            async with session.post(url, headers=headers, data=json.dumps(payload)) as resp:
                 response_data = await resp.json()
                 if response_data and response_data.get("candidates"):
                     decision = response_data["candidates"][0]["content"]["parts"][0]["text"].strip().upper()
@@ -50,15 +56,21 @@ async def get_llm_response(prompt, current_user_id=None):
         persona += "\n\nIMPORTANT: You are currently talking to Snazzy Daddy directly. Do NOT mention or tag Snazzy Daddy in your response. Refer to him as boss, bossman, boss dawg, or something adjacent."
 
     payload = {
-        "contents": [{"parts": [{"text": prompt}]}],
+        "contents": [
+            {"role": "user", "parts": [{"text": prompt}]}
+        ],
         "systemInstruction": {"parts": [{"text": persona}]}
     }
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key={LLM_API_KEY}"
+    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+    headers = {
+        "Content-Type": "application/json",
+        "x-goog-api-key": LLM_API_KEY
+    }
 
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(payload)) as resp:
+            async with session.post(url, headers=headers, data=json.dumps(payload)) as resp:
                 response_data = await resp.json()
                 if response_data and response_data.get("candidates"):
                     return response_data["candidates"][0]["content"]["parts"][0]["text"]
@@ -82,15 +94,21 @@ The statuses should be in the same vibe and tone as the examples. Each status sh
 """
 
     payload = {
-        "contents": [{"parts": [{"text": prompt}]}],
+        "contents": [
+            {"role": "user", "parts": [{"text": prompt}]}
+        ],
         "systemInstruction": {"parts": [{"text": "You are a creative assistant. Generate a list of 24 Discord statuses."}]}
     }
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key={LLM_API_KEY}"
+    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+    headers = {
+        "Content-Type": "application/json",
+        "x-goog-api-key": LLM_API_KEY
+    }
 
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.post(url, headers={"Content-Type": "application/json"}, data=json.dumps(payload)) as resp:
+            async with session.post(url, headers=headers, data=json.dumps(payload)) as resp:
                 response_data = await resp.json()
                 if response_data and response_data.get("candidates"):
                     text = response_data["candidates"][0]["content"]["parts"][0]["text"]
