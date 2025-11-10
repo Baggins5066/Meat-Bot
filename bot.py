@@ -45,34 +45,35 @@ async def on_message(message):
     # Prevent processing the same message twice
     if message.id in processed_messages:
         return
-    processed_messages.append(message.id)
 
-    log(f"[INCOMING][#{message.channel}] {message.author}: {message.content}", Fore.CYAN)
+    try:
+        is_replying = True
+        processed_messages.append(message.id)
 
-    perms = message.channel.permissions_for(message.guild.me)
-    if not (perms.send_messages and perms.read_messages):
-        return
+        log(f"[INCOMING][#{message.channel}] {message.author}: {message.content}", Fore.CYAN)
 
-    history = conversation_history.get(message.channel.id, [])
-    history.append({"author": str(message.author), "content": message.content})
-    if len(history) > 10:
-        history = history[-10:]
-    conversation_history[message.channel.id] = history
+        perms = message.channel.permissions_for(message.guild.me)
+        if not (perms.send_messages and perms.read_messages):
+            return
 
-    # Check if message is a direct reply to bot or mentions bot
-    is_direct_reply = message.reference and message.reference.resolved and message.reference.resolved.author == client.user
-    is_bot_mentioned = client.user in message.mentions or "meat bro" in message.content.lower()
+        history = conversation_history.get(message.channel.id, [])
+        history.append({"author": str(message.author), "content": message.content})
+        if len(history) > 10:
+            history = history[-10:]
+        conversation_history[message.channel.id] = history
 
-    # Auto-reply if directly mentioned or replied to
-    if is_direct_reply or is_bot_mentioned:
-        should_reply = True
-    else:
-        # Use AI to decide if bot should reply
-        should_reply = await should_bot_reply(message, history)
+        # Check if message is a direct reply to bot or mentions bot
+        is_direct_reply = message.reference and message.reference.resolved and message.reference.resolved.author == client.user
+        is_bot_mentioned = client.user in message.mentions or "meat bro" in message.content.lower()
 
-    if should_reply and perms.send_messages:
-        try:
-            is_replying = True
+        # Auto-reply if directly mentioned or replied to
+        if is_direct_reply or is_bot_mentioned:
+            should_reply = True
+        else:
+            # Use AI to decide if bot should reply
+            should_reply = await should_bot_reply(message, history)
+
+        if should_reply and perms.send_messages:
             async with message.channel.typing():
                 prompt = (
                     f"Recent chat history:\n{history}\n\n"
@@ -86,8 +87,8 @@ async def on_message(message):
                 # Add bot's response to history
                 history.append({"author": str(client.user), "content": response})
                 conversation_history[message.channel.id] = history
-        finally:
-            is_replying = False
+    finally:
+        is_replying = False
 
 
 @tasks.loop(hours=1)
