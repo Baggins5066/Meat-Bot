@@ -13,7 +13,7 @@ fi
 python3 -m pip show python-dotenv > /dev/null 2>&1
 if [ $? -ne 0 ]; then
     echo "python-dotenv not found. Installing..."
-    pip install python-dotenv
+    python3 -m pip install python-dotenv
 fi
 
 echo "Running bot..."
