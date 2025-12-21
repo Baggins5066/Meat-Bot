@@ -1,5 +1,13 @@
 import os
 
+# Try to load from .env file for PC users (optional)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    # python-dotenv not installed, will use environment variables directly
+    pass
+
 # -------- BOT CONFIG --------
 DISCORD_BOT_TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
 LLM_API_KEY = os.environ.get("LLM_API_KEY")
