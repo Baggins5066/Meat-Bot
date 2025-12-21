@@ -9,7 +9,7 @@ if exist venv\Scripts\activate.bat (
 )
 
 REM Check if python-dotenv is installed
-python -c "import dotenv" 2>nul
+python -m pip show python-dotenv >nul 2>&1
 if errorlevel 1 (
     echo python-dotenv not found. Installing...
     pip install python-dotenv

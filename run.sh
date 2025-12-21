@@ -10,7 +10,7 @@ if [ -d "venv" ]; then
 fi
 
 # Check if python-dotenv is installed
-python3 -c "import dotenv" 2>/dev/null
+python3 -m pip show python-dotenv > /dev/null 2>&1
 if [ $? -ne 0 ]; then
     echo "python-dotenv not found. Installing..."
     pip install python-dotenv

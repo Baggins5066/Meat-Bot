@@ -37,7 +37,7 @@ You'll need to obtain the following API keys:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/Baggins5066/Meat-Bot.git
+git clone <repository-url>
 cd Meat-Bot
 ```
 
